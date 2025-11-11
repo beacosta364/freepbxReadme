@@ -161,3 +161,96 @@ Autor: Brayan Acosta
 Materia: Seguridad y Redes / Telefonía IP
 Software usado: FreePBX 15 + Asterisk 16 + Zoiper 5
 Objetivo: Configuración segura de un entorno de telefonía VoIP interno.
+
+
+## 📊 Monitoreo del sistema y del servicio Asterisk
+
+### 🔹 Monitoreo general del sistema
+
+| Propósito | Comando | Descripción |
+|------------|----------|--------------|
+| Ver uso de CPU y memoria | `top` o `htop` | Muestra procesos activos y consumo de recursos. |
+| Espacio en disco | `df -h` | Muestra espacio disponible en todas las particiones. |
+| Uso de red | `iftop` o `ip -s link` | Monitorea tráfico en tiempo real por interfaz. |
+| Ver servicios activos | `systemctl list-units --type=service` | Lista todos los servicios en ejecución. |
+| Consultar IP asignada | `ip addr show` | Verifica configuración de red actual. |
+
+---
+
+### 🔹 Monitoreo del servicio FreePBX / Asterisk
+
+| Propósito | Comando | Descripción |
+|------------|----------|--------------|
+| Entrar a la consola de Asterisk | `asterisk -rvv` | Acceso interactivo con logs en tiempo real. |
+| Ver llamadas activas | `core show channels` | Muestra las llamadas y canales abiertos. |
+| Ver peers SIP registrados | `sip show peers` | Lista las extensiones registradas con su IP y estado. |
+| Ver registros PJSIP | `pjsip show endpoints` | Similar al anterior, pero para endpoints PJSIP. |
+| Ver cola de mensajes SIP | `sip show registry` | Verifica registro de troncales externas. |
+| Monitorear flujo de llamadas | `core show calls` | Muestra número de llamadas procesadas. |
+| Ver consumo de CPU de Asterisk | `ps -aux | grep asterisk` | Identifica el uso de recursos del proceso. |
+
+---
+
+### 🔹 Monitoreo de seguridad
+
+| Propósito | Comando | Descripción |
+|------------|----------|--------------|
+| Revisar intentos de acceso SSH | `grep "Failed password" /var/log/secure` | Detecta intentos de intrusión. |
+| Ver estado de Fail2Ban | `fail2ban-client status` | Muestra jails activos y estado general. |
+| Ver IPs bloqueadas | `fail2ban-client status asterisk-iptables` | Muestra IPs bloqueadas por ataques SIP. |
+| Logs de Asterisk | `tail -f /var/log/asterisk/full` | Monitorea actividad y errores del sistema. |
+| Logs del sistema | `journalctl -xe` | Verifica mensajes críticos del sistema. |
+
+---
+
+### 🔹 Monitoreo en la interfaz Web (GUI)
+
+Desde la interfaz gráfica de FreePBX:
+
+- **Reports → Asterisk Info:** muestra estadísticas en tiempo real (canales, troncales, codecs).  
+- **Reports → Call Event Logging (CEL):** historial detallado de llamadas.  
+- **Dashboard:** estado general del sistema (CPU, RAM, Asterisk, servicios y actualizaciones).  
+- **Admin → System Admin → Updates:** control de parches y versiones.
+
+---
+
+### 🔹 Comando resumen de estado general
+
+fwconsole show
+fwconsole status
+asterisk -rx "core show uptime"
+asterisk -rx "core show channels"
+asterisk -rx "pjsip show endpoints"
+asterisk -rx "core show version"
+---
+
+Ejemplo de monitoreo continuo
+watch -n 5 "asterisk -rx 'core show channels concise'"
+
+
+
+Puedes crear un script de monitoreo rápido con:
+
+nano monitor-voip.sh
+
+#!/bin/bash
+echo "===== ESTADO GENERAL DE FREEPBX ====="
+fwconsole status
+echo
+echo "===== LLAMADAS ACTIVAS ====="
+asterisk -rx "core show channels"
+echo
+echo "===== ENDPOINTS PJSIP ====="
+asterisk -rx "pjsip show endpoints"
+echo
+echo "===== ESTADO FAIL2BAN ====="
+fail2ban-client status asterisk-iptables
+
+
+
+
+
+Dale permisos y ejecútalo:
+
+chmod +x monitor-voip.sh
+./monitor-voip.sh
