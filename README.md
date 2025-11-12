@@ -254,3 +254,88 @@ Dale permisos y ejecútalo:
 
 chmod +x monitor-voip.sh
 ./monitor-voip.sh
+
+
+
+
+ 1. Comandos básicos del sistema
+Comando	Descripción
+uname -a	Muestra información del sistema operativo.
+uptime	Indica cuánto tiempo lleva encendido el sistema.
+df -h	Muestra el uso del disco.
+free -h	Muestra la memoria RAM usada y disponible.
+top	Muestra los procesos activos en tiempo real.
+	
+journalctl -xe	Muestra los últimos eventos o errores del sistema.
+
+2. Comandos FreePBX / Asterisk
+Comando	Descripción
+fwconsole status	Verifica el estado general de FreePBX y Asterisk.
+fwconsole start	Inicia Asterisk y todos los módulos FreePBX.
+fwconsole restart	Reinicia Asterisk y FreePBX.
+fwconsole stop	Detiene Asterisk.
+fwconsole reload	Recarga la configuración sin reiniciar servicios.
+asterisk -rvvv	Entra a la consola de Asterisk en modo interactivo.
+core show channels	(Dentro de Asterisk) Muestra las llamadas activas.
+sip show peers	(Dentro de Asterisk) Lista las extensiones SIP registradas.
+pjsip show endpoints	(Dentro de Asterisk) Lista los endpoints PJSIP activos.
+core show version	Muestra la versión exacta de Asterisk.
+
+4.	Comandos de Firewall FreePBX
+Comando	Descripción
+fwconsole firewall start	Inicia el módulo de firewall de FreePBX.
+fwconsole firewall stop	Detiene el firewall.
+fwconsole firewall status	Muestra si el firewall está activo o no.
+fwconsole firewall list	Lista todas las zonas y reglas activas.
+fwconsole firewall list trusted	Muestra lo que está en la zona “trusted”.
+fwconsole firewall trust 192.168.0.0/16	Marca toda la red local como de confianza.
+fwconsole firewall add trusted 5060/udp	Permite el puerto SIP (voz).
+fwconsole firewall add trusted 22/tcp	Permite conexión SSH.
+fwconsole firewall block 23/tcp	Bloquea un puerto (por ejemplo, Telnet).
+fwconsole firewall restart	Reinicia el firewall aplicando los cambios.
+
+5.	Comandos de red y conectividad
+Comando	Descripción
+ip addr	Muestra todas las interfaces de red y sus IP.
+ping 8.8.8.8	Comprueba la conexión a internet.
+`netstat -tulnp	grep asterisk`
+ss -tulnp	Similar a netstat, muestra conexiones activas.
+hostname -I	Muestra solo las IP del sistema.
+6.	Monitoreo y seguridad
+Comando	Descripción
+fail2ban-client status	Muestra el estado de Fail2Ban y los jails activos.
+fail2ban-client status asterisk-iptables	Muestra IPs bloqueadas por ataques SIP.
+fwconsole firewall f2bstatus	Muestra IPs bloqueadas desde FreePBX.
+tail -f /var/log/asterisk/full	Muestra en tiempo real los eventos de Asterisk.
+asterisk -rx "core show calls"	Muestra cuántas llamadas hay activas.
+asterisk -rx "sip show registry"	Muestra el estado de los registros SIP externos.
+7.	Utilidades adicionales
+Comando	Descripción
+fwconsole reload	Aplica cambios sin reiniciar.
+fwconsole ma list	Lista los módulos instalados de FreePBX.
+fwconsole ma upgradeall	Actualiza todos los módulos disponibles.
+fwconsole chown	Corrige permisos de archivos FreePBX.
+fwconsole notifications	Muestra notificaciones pendientes.
+
+Monitoreo en consola:
+Propósito	Comando
+Ver llamadas activas	asterisk -rx "core show channels"
+Ver extensiones activas	asterisk -rx "pjsip show endpoints"
+Logs en tiempo real	tail -f /var/log/asterisk/full
+Recursos del sistema	top o htop
+Puertos abiertos	netstat -tulnp
+Validar integridad FreePBX	fwconsole validate
+
+
+d) Activar Fail2Ban
+“Fail2Ban detecta intentos de acceso sospechosos y bloquea automáticamente las IPs que fallan muchas veces.
+
+Lo activamos con:
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+sudo fail2ban-client status
+Para ver las IPs bloqueadas:
+sudo fail2ban-client status asterisk-iptables
+Y si queremos desbloquear una:
+sudo fail2ban-client set asterisk-iptables unbanip 192.168.1.20
+Con esto, el sistema se defiende automáticamente contra ataques de fuerza bruta.”
